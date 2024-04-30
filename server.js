@@ -32,6 +32,7 @@ app.use((req, res, next) => {
 
 app.use("/api/user",  require("./routes/users"));
 app.use("/api/question",  require("./routes/question"));
+app.use("/api/comment",  require("./routes/comment"));
 
 
 
