@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Comment = require("../models/comment")
-
+const Notification = require("../models/notification")
+const User = require("../models/users")
 
 // add une qest touristique
 router.post("/add", async (req, res) => {
@@ -12,7 +13,15 @@ router.post("/add", async (req, res) => {
             question_id: req.body.question_id,
             commentContent: req.body.commentContent,
         });
-        newComment.save().then(() => {
+        newComment.save().then(async () => {
+            const users = await User.find({ _id: { $ne: req.body.user_id } });
+            const notifications = users.map(user => ({
+                user: user._id,
+                user_added: req.body.user_id,
+                type: `comment`,
+                question_id: req.body.question_id,
+            }));
+            await Notification.insertMany(notifications);
             res.status(200).json({ message: "Comment added sucssefuly" });
         });
 
@@ -26,7 +35,7 @@ router.post("/add", async (req, res) => {
 
 
 //  get All qest
-router.get("/get",async (req, res) => {
+router.get("/get", async (req, res) => {
     try {
         const Comment = await Comment.find().populate('user_id question_id');
         res.status(200).json({ data: Comment });
@@ -48,11 +57,17 @@ router.delete('/delete/:id', async (req, res) => {
 
 
 //get Qest by id
-router.get("/getById/:id",async (req, res) => {
+router.get("/getById/:id", async (req, res) => {
     Comment.findOne({ _id: req.params.id }).then((findedObject) => {
         if (findedObject) {
             res.status(200).json({ data: findedObject });
         }
+    })
+});
+router.put("/update", async (req, res) => {
+    Comment.updateOne({ _id: req.body._id }, req.body).then(() => {
+        res.status(200).json({ message: 'updated' });
+
     })
 });
 

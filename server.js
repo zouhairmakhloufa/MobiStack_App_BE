@@ -2,11 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
 const path = require('path')
-
-mongoose.connect('mongodb://127.0.0.1/mobiStackV2', {
+mongoose.connect('mongodb://127.0.0.1/mobiStack', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
+})
 
 
 const app = express();
@@ -33,6 +32,8 @@ app.use((req, res, next) => {
 app.use("/api/user",  require("./routes/users"));
 app.use("/api/question",  require("./routes/question"));
 app.use("/api/comment",  require("./routes/comment"));
+app.use("/api/notification",  require("./routes/notification"));
+app.use("/api/kpi",  require("./routes/kpi"));
 
 
 

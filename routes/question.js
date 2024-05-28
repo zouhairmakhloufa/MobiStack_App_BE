@@ -1,9 +1,11 @@
 const router = require("express").Router();
 const Question = require("../models/question")
 const Comment = require("../models/comment")
+const Notification = require("../models/notification")
+const User = require("../models/users")
 
 
-// add une qest touristique
+
 router.post("/add", async (req, res) => {
 
     try {
@@ -13,12 +15,20 @@ router.post("/add", async (req, res) => {
             type,
             user_id,
             questionContent: {
-              blocks: questionContent.blocks || [],
-              entityMap: questionContent.entityMap || {},
+                blocks: questionContent.blocks || [],
+                entityMap: questionContent.entityMap || {},
             },
-          });
-      
-        newQuestion.save().then(() => {
+        });
+
+        newQuestion.save().then(async () => {
+            const users = await User.find({ _id: { $ne: user_id } });
+            const notifications = users.map(user => ({
+                user: user._id,
+                user_added:user_id,
+                type: `question`,
+                question_id: newQuestion._id,
+            }));
+            await Notification.insertMany(notifications);
             res.status(200).json({ message: "qest added sucssefuly" });
         });
 
@@ -32,10 +42,10 @@ router.post("/add", async (req, res) => {
 
 
 //  get All qest
-router.get("/get",async (req, res) => {
+router.get("/get", async (req, res) => {
     try {
-        Question.find().populate('user_id').then(async(findedQuestion)=>{
-         
+        Question.find().populate('user_id').then(async (findedQuestion) => {
+
             res.status(200).json({ data: findedQuestion });
 
         })
@@ -51,20 +61,33 @@ router.get('/getWithCommentCount', async (req, res) => {
 
         // Aggregate comment counts by question_id
         const commentCounts = await Comment.aggregate([
-            { $group: { _id: '$question_id', count: { $sum: 1 } } }
+            {
+                $group: {
+                    _id: '$question_id',
+                    count: { $sum: 1 },
+                    hasTrustedComment: { $max: { $cond: ['$trusted', 1, 0] } }
+                }
+            }
+
         ]);
 
         // Create a map of question IDs to comment counts
         const commentCountMap = {};
-        commentCounts.forEach(count => {
-            commentCountMap[count._id] = count.count;
+        const trustedCommentMap = {};
+
+        commentCounts.forEach(entry => {
+            commentCountMap[entry._id] = entry.count;
+            trustedCommentMap[entry._id] = entry.hasTrustedComment === 1;
+
         });
 
         // Add the comment counts to the questions
         const questionsWithCommentCounts = questions.map(question => {
             return {
                 ...question.toObject(),
-                commentCount: commentCountMap[question._id] || 0
+                commentCount: commentCountMap[question._id] || 0,
+                hasTrustedComment: trustedCommentMap[question._id] || false
+
             };
         });
 
@@ -88,11 +111,11 @@ router.delete('/delete/:id', async (req, res) => {
 
 
 //get Qest by id
-router.get("/getById/:id",async (req, res) => {
-    Question.findOne({ _id: req.params.id }).then(async(findedObject) => {
+router.get("/getById/:id", async (req, res) => {
+    Question.findOne({ _id: req.params.id }).then(async (findedObject) => {
         if (findedObject) {
-         const comments=await Comment.find({question_id:req.params.id}).populate('user_id question_id');
-            res.status(200).json({ questions: findedObject , comments:comments });
+            const comments = await Comment.find({ question_id: req.params.id }).populate('user_id question_id');
+            res.status(200).json({ questions: findedObject, comments: comments });
         }
     })
 });
