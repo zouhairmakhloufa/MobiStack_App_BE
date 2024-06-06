@@ -200,8 +200,14 @@ router.put('/update/:id', upload.single('avatar'), async (req, res) => {
 
     // Save the updated user data
     await user.save();
-
-    res.json({ message: 'User updated successfully', data: user });
+    const token = jwt.sign({
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      avatar: user?.avatar
+    }, "secretKey", { expiresIn: '1h' });
+    res.json({ message: 'User updated successfully', data: token });
   } catch (error) {
     console.error('Error updating user:', error);
     res.status(500).json({ message: 'An error occurred while updating user' });

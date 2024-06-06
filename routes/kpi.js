@@ -39,6 +39,8 @@ router.get('/dashboardUser/:id', async (req, res) => {
 });
 
 
+
+
 router.get('/adminDashboard', async (req, res) => {
     try {
         const userCount = await User.countDocuments({});
@@ -47,9 +49,27 @@ router.get('/adminDashboard', async (req, res) => {
         const notTrustedCommentCount = commentCount - trustedCommentCount;
 
         const questionCount = await Question.countDocuments({});
-        // Assuming you have a field that indicates if a question has been replied to
         const repliedQuestionCount = await Question.countDocuments({ "someFieldIndicatingReply": true });
         const notRepliedQuestionCount = questionCount - repliedQuestionCount;
+
+        // Get the number of questions per month
+        const questionsPerMonth = await Question.aggregate([
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { "_id": 1 } // Ensure months are sorted
+            }
+        ]);
+
+        // Format the data to ensure each month is represented, even if count is 0
+        const questionsPerMonthFormatted = Array(12).fill(0);
+        questionsPerMonth.forEach(monthData => {
+            questionsPerMonthFormatted[monthData._id - 1] = monthData.count;
+        });
 
         res.status(200).json({
             users: userCount,
@@ -61,12 +81,14 @@ router.get('/adminDashboard', async (req, res) => {
             question: {
                 total: questionCount,
                 replied: repliedQuestionCount,
-                notReplied: notRepliedQuestionCount
+                notReplied: notRepliedQuestionCount,
+                perMonth: questionsPerMonthFormatted
             }
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 module.exports = router;
