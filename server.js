@@ -7,8 +7,6 @@ mongoose.connect('mongodb://127.0.0.1/mobiStack', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-
-
 const app = express();
 
 app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
@@ -30,12 +28,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/user",  require("./routes/users"));
-app.use("/api/question",  require("./routes/question"));
-app.use("/api/comment",  require("./routes/comment"));
-app.use("/api/notification",  require("./routes/notification"));
-app.use("/api/kpi",  require("./routes/kpi"));
+app.use("/api/user", require("./routes/users"));
+app.use("/api/question", require("./routes/question"));
+app.use("/api/comment", require("./routes/comment"));
+app.use("/api/notification", require("./routes/notification"));
+app.use("/api/kpi", require("./routes/kpi"));
 
 
 
-app.listen(5000, () => { console.log(`Server is running on port: ${5000}`);   });
+app.listen(5000, () => { console.log(`Server is running on port: ${5000}`); });

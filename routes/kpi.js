@@ -1,11 +1,7 @@
 const router = require("express").Router();
-
 const Comment = require("../models/comment")
 const Question = require("../models/question");
-const User = require('../models/users'); 
-
-
-
+const User = require('../models/users');
 
 
 router.get('/dashboardUser/:id', async (req, res) => {

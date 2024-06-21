@@ -2,10 +2,6 @@ const router = require("express").Router();
 const Notification = require("../models/notification")
 
 
-
-
-
-
 //get Qest by id
 router.get("/getByUserId/:id", async (req, res) => {
     Notification.find({ user: req.params.id, isRead: false }).populate('user_added').then((findedObject) => {

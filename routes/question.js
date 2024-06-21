@@ -24,7 +24,7 @@ router.post("/add", async (req, res) => {
             const users = await User.find({ _id: { $ne: user_id } });
             const notifications = users.map(user => ({
                 user: user._id,
-                user_added:user_id,
+                user_added: user_id,
                 type: `question`,
                 question_id: newQuestion._id,
             }));

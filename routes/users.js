@@ -32,7 +32,7 @@ router.post("/signup", async (req, res) => {
       email: req.body.email,
       password: hashPwd,
       role: req.body.role,
-      avatar:"@src/assets/images/portrait/small/avatar-s-11.jpg"
+      avatar: "@src/assets/images/portrait/small/avatar-s-11.jpg"
     })
     try {
       await user.save()
@@ -161,14 +161,14 @@ router.get('/getById/:id', (req, res) => {
   })
 })
 router.get('/getAll', (req, res) => {
-  User.find().then((findedUser) => {
+  User.find({ role: "user" }).then((findedUser) => {
     res.status(200).json({ data: findedUser })
 
   })
 })
 
 router.delete('/delete/:id', (req, res) => {
-  User.deleteOne({_id:req.params.id}).then(() => {
+  User.deleteOne({ _id: req.params.id }).then(() => {
     res.status(200).json({ message: 'User Deleted' })
 
   })

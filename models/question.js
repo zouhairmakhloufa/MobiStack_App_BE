@@ -4,7 +4,7 @@ const QestionSchema = mongoose.Schema(
   {
     name: String,
     type: String,
-    user_id:{type:String , ref:'User'},
+    user_id: { type: String, ref: 'User' },
     questionContent: {
       blocks: {
         type: Array,
